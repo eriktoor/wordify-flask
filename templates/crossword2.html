@@ -1,0 +1,299 @@
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_crossword.css') }}">
+
+    <title>{{ title }}</title>
+</head>
+
+<body>
+
+    <script>
+
+
+        var grid = {{ matrix| tojson }};
+        function drawGrid() {
+
+            document.getElementById("downloadPicButton").style.display = "block"
+            document.getElementById("clues_container").style.display = "flex"
+
+            document.getElementById("puzzle").innerHTML = ""
+
+            //Draw grid
+            $.each(grid, function (i) {
+                var row = $('<tr></tr>');
+                console.log("hello world")
+                $.each(this, function (j) {
+                    if (this == 0) {
+                        $(row).append('<td class="square empty"></td>');
+                    }
+                    else {
+                        var question_number = String(grid[i][j]).split(",");
+
+                        var starting_number = '';
+                        var question_number_span = '';
+
+                        for (var k = 0; k < question_number.length; k++) {
+                            var direction = get_direction(question_number[k]);
+                            var startpos = get_startpos(question_number[k], direction);
+
+                            if (direction == "horizontal" && startpos[0] == i && startpos[1] == j) {
+                                starting_number += question_number[k] + ",";
+
+                            }
+                            else if (direction == "vertical" && startpos[0] == j && startpos[1] == i) {
+                                starting_number += question_number[k] + ",";
+                            }
+
+                        }
+                        if (starting_number != "") {
+                            question_number_span = '<span class="question_number">' + starting_number.replace(/(^,)|(,$)/g, "") + '</span>';
+                        }
+
+                        $(row).append('<td>' + question_number_span + '<div class="square letter" data-number="' + this + '" contenteditable="true"></div></td>');
+                    }
+                });
+                console.log(row)
+                $("#puzzle").append(row);
+                // document.getElementById('puzzle').innerHTML = row
+            });
+
+
+            //Draw hints
+            var vertical_hints = $('<div id="vertical_hints"></div>');
+            var horizontal_hints = $('<div id="horizontal_hints"></div>');
+            $.each(clues, function (index) {
+
+                var direction = get_direction(index + 1);
+
+                if (direction == "horizontal") {
+                    $(horizontal_hints).append('<div class="hint"><b>' + (index + 1) + '</b>.-' + clues[index] + '</hint>');
+                }
+                else if (direction == "vertical") {
+                    $(vertical_hints).append('<div class="hint"><b>' + (index + 1) + '</b>.-' + clues[index] + '</hint>');
+                }
+            });
+            $("#vertical_hints_container").append(vertical_hints);
+            $("#horizontal_hints_container").append(horizontal_hints);
+
+        }
+
+
+
+
+        $(".letter").keyup(function () {
+            var this_text = $(this).text();
+            if (this_text.length > 1) {
+                $(this).text(this_text.slice(0, 1));
+            }
+        });
+
+        $(".letter").click(function () {
+            document.execCommand('selectAll', false, null);
+
+            $(".letter").removeClass("active");
+            $(this).addClass("active");
+
+            $(".hint").css("color", "initial");
+
+            var question_numbers = String($(this).data("number")).split(",");
+
+            $.each(question_numbers, function () {
+                $("#hints .hint:nth-child(" + this + ")").css("color", "red");
+            });
+        });
+
+        $("#solve").click(function () {
+            if (!$(".letter.active").length)
+                return;
+            var question_numbers = String($(".letter.active").data("number")).split(",");
+            $.each(question_numbers, function () {
+                fillAnswer(this);
+            });
+        });
+
+
+
+
+
+        function get_direction(question_number) {
+            for (var i = 0; i < grid.length; i++) {
+                for (var j = 0; j < grid[i].length; j++) {
+                    if (String(grid[i][j]).indexOf(question_number) != -1) {
+                        if (grid[i + 1][j] == question_number || grid[i - 1][j] == question_number) {
+                            return "vertical";
+                        }
+
+                        if (grid[i][j + 1] == question_number || grid[i][j - 1] == question_number) {
+                            return "horizontal";
+                        }
+                    }
+                }
+            }
+        }
+
+        function get_startpos(question_number, direction) {
+            if (direction == "horizontal") {
+                for (var i = 0; i < grid.length; i++) {
+                    for (var j = 0; j < grid[i].length; j++) {
+                        if (String(grid[i][j]).indexOf(question_number) != -1) {
+                            return [i, j];
+                        }
+                    }
+                }
+            }
+
+            else if (direction == "vertical") {
+                for (var i = 0; i < grid.length; i++) {
+                    for (var j = 0; j < grid[i].length; j++) {
+                        if (String(grid[j][i]).indexOf(question_number) != -1) {
+                            return [i, j];
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
+        var activeReceipt;
+
+
+        function showContent(id) {
+            // set all of the other ones to invisible
+            for (let i = 0; i < document.querySelectorAll(".receiptContainer").length; i++) {
+                document.querySelectorAll(".receiptContainer")[i].style.display = "none"
+            }
+            document.getElementById(id).style.display = 'inline-block'
+            document.getElementById('downloadPicButton').style.display = 'inline-block'
+            activeReceipt = id
+        }
+
+        function hiddenClone(element) {
+            // Create clone of element
+            var clone = element.cloneNode(true);
+
+            // Position element relatively within the
+            // body but still out of the viewport
+            var style = clone.style;
+            style.position = "relative";
+            style.top = window.innerHeight + "px";
+            style.left = 0;
+            // Append clone to body and return the clone
+            document.body.appendChild(clone);
+            return clone;
+        }
+
+        $(document).ready(function () {
+
+            // Global variable
+            var element = $(".puzzleContainerWrapper");
+
+            // Global variable
+            var getCanvas;
+
+            $("#downloadPicButton").on('click', function () {
+                var offScreen = document.querySelector(".puzzleContainerWrapper");
+                window.scrollTo(0, 0);
+                var clone = hiddenClone(offScreen);
+                // Use clone with htm2canvas and delete clone
+                html2canvas(clone, { scrollY: -window.scrollY }).then((canvas) => {
+                    var dataURL = canvas.toDataURL("image/png", 1.0);
+                    document.body.removeChild(clone);
+                    var link = document.createElement("a");
+                    link.href = dataURL;
+                    link.download = `${activeReceipt}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            });
+
+        });
+
+    </script>
+
+    <div class="puzzleContainerWrapper">
+
+
+        <center>
+            <div class="headerBox">
+                <h1>Wordify</h1>
+                <h3>Top Track Generator</h3>
+            </div>
+        </center>
+
+
+        <center>
+            <div id="puzzle_container">
+                <table id="puzzle" background="{{ url_for('static', filename='spotify.png') }}" width="100%"
+                    height="100">
+                </table>
+            </div>
+        </center>
+
+        <!-- <div style="width: 100%; height: auto" class="receiptContainerWrapper1">
+        <center>
+            <p>{{crossword}}</p>
+        </center>
+    </div>
+
+    <div style="width: 100%; height: auto" class="receiptContainerWrapper2">
+        <center>
+            <p>{{across}}</p>
+            <p>{{down}}</p>
+            <p>{{not_included}}</p>
+        </center>
+    </div> -->
+
+        <center>
+            <div class="flex-container" id="clues_container" style="display: none">
+
+                <div class="flex-child vertical_hints_container">
+                    <h3>Horizontal</h3>
+
+                    {% for hint in across %}
+                    <p>{{ hint }}</p>
+                    {% endfor %}
+                </div>
+
+
+                <div class="flex-child horizontal_hints_container">
+                    <h3>Vertical</h3>
+
+                    {% for hint in down %}
+                    <p>{{ hint }}</p>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </center>
+    </div>
+
+
+    <br></br>
+    <div style="width: 100%; height: auto" class="buttons">
+        <center>
+            <div>
+                <button onclick=drawGrid() class="generatePicButton">Short Term Receipt</button>
+                <button onclick="showContent('medium_term_receipt')" class="generatePicButton">Medium Term
+                    Receipt</button>
+                <button onclick="showContent('long_term_receipt')" class="generatePicButton">Long Term Receipt</button>
+            </div>
+        </center>
+    </div>
+
+
+    <center>
+        <button class="generatePicButton" id="downloadPicButton">Download</button>
+    </center>
+
+</body>
+
+</html>

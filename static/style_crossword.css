@@ -1,0 +1,87 @@
+#puzzle {
+	width:50%;
+	margin: 20px;
+	padding: 10px;
+	border: 2px solid black;
+}
+
+.headerBox {
+    width:66%;
+	margin: 20px;
+	padding: 0px;
+	border: 2px solid pink;
+}
+
+.square{
+	width:30px;
+	height:30px;
+	margin: 0;
+	padding: 0;
+	border-collapse: collapse;
+    position: relative;
+}
+
+.empty{
+      /* background-color: green;  */
+      /* background-image: url(spotify.png); */
+
+
+}
+
+.letter{
+    border: 1px solid black;
+    text-align: center;
+    cursor: pointer;
+
+}
+
+
+.flex-container {
+    display: flex;
+    width: 66%
+}
+
+.flex-child {
+    flex: 1;
+    border: 2px solid yellow;
+}  
+
+.flex-child:first-child {
+    margin-right: 20px;
+} 
+
+#puzzle_container{
+	/* float: left; */
+	/* width:50%; 
+	height: 50%; */
+}
+
+#hints_container{
+	float: left;
+	width:50%;
+	height: 50%;
+    margin-left: 25px;
+}
+
+#buttons_container{
+    clear: both;
+    padding-top: 20px;
+    margin-left: 50px;
+}
+
+.active{
+    border-color: red;
+}
+
+.question_number{
+    position: absolute;
+    font-size: 12px;
+    color: grey;
+    left: 3px;
+    top: 3px;
+}
+
+td{
+    position:relative;padding: 0 0px;
+
+}
