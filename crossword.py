@@ -257,6 +257,7 @@ def create_crossword(song_info):
     print_g(sol_g)
 
     x_min, y_min, x_max, y_max = corners(sol_g)
+    print(x_min, y_min)
 
     matrix_nums = [[0 for i in range(20)] for j in range(20)]
     matrix = [["#" for i in range(20)] for j in range(20)]
@@ -271,17 +272,19 @@ def create_crossword(song_info):
             j += 1  
         hint_number += 1
 
-    for val, i, j in down: 
+    for val, i, j in down: # THESE ARE THE DOWNS 
         count = 0
         while count < len(val): 
-            matrix[j - x_min + 1][i - y_min] = val[count]
-            matrix_nums[j - x_min + 1][i - y_min] = str(hint_number)
+            matrix[j - y_min + 1][i - x_min] = val[count]
+            matrix_nums[j - y_min + 1][i - x_min] = str(hint_number)
             count += 1 
             j += 1  
         hint_number += 1 
 
     for row in matrix: 
         print(row)
+    
+    print(words_not_in)
 
     hints_across = [song_info[name].get_song_clue() for name,i,j in across]
     hints_down = [song_info[name].get_song_clue() for name,i,j in down]

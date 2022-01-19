@@ -1,5 +1,14 @@
 import random 
 
+class CrossWordSolved:
+    def __init__(self, sol_g, across, down, not_included, matrix):
+        self.sol_g = sol_g
+        self.across = across 
+        self.down = down 
+        self.not_included = not_included
+        self.matrix = matrix
+
+
 class SpotifySong:
     def __init__(self, json):
         self.name = json['name'].split("(")[0].split("-")[0].strip()

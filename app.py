@@ -1,3 +1,4 @@
+from ctypes.wintypes import LONG
 from flask import Flask, request, url_for, session, redirect, render_template
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -105,14 +106,24 @@ def getIdk():
         time_range=SHORT_TERM,
     )
 
-    songs = short_term['items']
+    medium_term = sp.current_user_top_tracks(
+        limit=10,
+        offset=0,
+        time_range=MEDIUM_TERM,
+    )
+
+    long_term = sp.current_user_top_tracks(
+        limit=10,
+        offset=0,
+        time_range=LONG_TERM,
+    )
 
     from crossword_helper import get_song_to_artist
-    songs_to_info = get_song_to_artist(songs) 
+    songs_to_info_short_term = get_song_to_artist(short_term['items']) 
 
     from crossword import create_crossword
 
-    sol_g, across, down, not_included, matrix = create_crossword(songs_to_info)
+    sol_g, across, down, not_included, matrix = create_crossword(songs_to_info_short_term)
 
 
     if (os.path.exists('.cache')):

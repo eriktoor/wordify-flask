@@ -10,6 +10,7 @@
 	margin: 20px;
 	padding: 0px;
 	border: 2px solid pink;
+    background-color: lightblue;
 }
 
 .square{
@@ -44,6 +45,7 @@
 .flex-child {
     flex: 1;
     border: 2px solid yellow;
+    background-color: lightcoral;
 }  
 
 .flex-child:first-child {
